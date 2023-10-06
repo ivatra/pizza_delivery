@@ -8,9 +8,13 @@ const port = 3000;
 const bodyParser = require("body-parser");
 
 const { MongoClient } = require("mongodb");
-// Replace the uri string with your connection string.
+
+// MongoDB connection string
+// For local MongoDB (Docker): use localhost
+// For MongoDB Atlas: use your Atlas connection string
 const uri =
-  "mongodb+srv://julianavanier:n5Wp1RhEFe7yNWFw@cluster0.vrbwnc0.mongodb.net/?retryWrites=true&w=majority";
+  process.env.MONGODB_URI ||
+  "mongodb://admin:password123@localhost:27017/orderpizza?authSource=admin";
 
 // parse application/json
 app.use(bodyParser.json());
@@ -21,11 +25,6 @@ app.use(cors());
 // CHECK --------------------------------------------------------
 // https://expressjs.com/en/starter/static-files.html
 app.use("/static", express.static("/public"));
-
-// https://expressjs.com/en/starter/faq.html
-app.use((req, res) => {
-  res.status(404).sendFile(__dirname + "/public/404.html");
-});
 
 // --------------------------------------------------------------------------------------
 
@@ -122,6 +121,12 @@ app.get("/customizepizza", (req, res) => {
   }
   run().catch(console.dir);
   // res.send(req.params)
+});
+
+// 404 handler - must be AFTER all route definitions
+// https://expressjs.com/en/starter/faq.html
+app.use((req, res) => {
+  res.status(404).sendFile(__dirname + "/public/404.html");
 });
 
 app.listen(port, () => {

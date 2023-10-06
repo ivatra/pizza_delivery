@@ -1,4 +1,18 @@
 <template>
+  <!-- Notification Toast -->
+  <transition name="fade">
+    <div v-if="showNotification" class="notification-toast">
+      <div class="notification-content">
+        <img
+          src="/img/cart-icon.png"
+          alt="Cart icon"
+          class="notification-icon"
+        />
+        <p>{{ notificationMessage }}</p>
+      </div>
+    </div>
+  </transition>
+
   <div class="box-menu-pizza">
     <h2>{{ pizza.title }}</h2>
     <div class="pizza-image">
@@ -42,31 +56,44 @@
     <div v-if="displaySetQt === true">
       <div class="box-features-cart">
         <div class="delete-pizza" @click="removePizzaFromCart(pizza)">
-          <img
-            src="/web-framework/582-app-order-pizza/img/delete-icon.png"
-            alt="Icon button delete"
-          />
+          <img src="/img/delete-icon.png" alt="Icon button delete" />
         </div>
 
         <div class="qt-order-item">
           <div class="qt-btn" @click="pizzaAddQuantity(pizza)">
-            <img
-              src="/web-framework/582-app-order-pizza/img/add.png"
-              alt="Icon button add"
-            />
+            <img src="/img/add.png" alt="Icon button add" />
           </div>
           <div class="qt-number">{{ pizza.quantity }}</div>
           <div class="qt-btn" @click="pizzaRemoveQuantity(pizza)">
-            <img
-              src="/web-framework/582-app-order-pizza/img/remove.png"
-              alt="Icon button remove"
-            />
+            <img src="/img/remove.png" alt="Icon button remove" />
           </div>
         </div>
         <div class="total-price" v-if="pizza.custom === false">
           <p>Item total: ${{ totalPrice }}</p>
         </div>
         <div class="total-price" v-else>
+          <!-- Display ingredients for custom pizza in cart -->
+          <div
+            v-if="
+              displaySetQt === true &&
+              pizza.ingredient &&
+              pizza.ingredient.length > 0
+            "
+            class="custom-pizza-ingredients"
+          >
+            <p class="ingredients-title">Ingredients:</p>
+            <div class="ingredients-list">
+              <span
+                v-for="(ingredient, index) in pizza.ingredient"
+                :key="ingredient._id"
+                class="ingredient-tag"
+              >
+                {{ ingredient.name
+                }}{{ index < pizza.ingredient.length - 1 ? ", " : "" }}
+              </span>
+            </div>
+          </div>
+
           <p>
             Item total: $
             {{
@@ -94,39 +121,24 @@
     <!-- Popup to select size of pizza -->
     <div class="select-size" :class="[selectSize ? 'appears' : 'disappears']">
       <p class="close-pop-up" @click="selectSize = false">
-        <img
-          src="/web-framework/582-app-order-pizza/img/close.png"
-          alt="Button to close"
-        />
+        <img src="/img/close.png" alt="Button to close" />
       </p>
       <h3>Add Item</h3>
       <div class="select-size-box">
         <div class="size" @click="sizeSelected('small', pizza.size.small)">
-          <img
-            src="/web-framework/582-app-order-pizza/img/pizza-icon.png"
-            alt="Icon pizza"
-          />
+          <img src="/img/pizza-icon.png" alt="Icon pizza" />
           <p>Small</p>
         </div>
         <div class="size" @click="sizeSelected('medium', pizza.size.medium)">
-          <img
-            src="/web-framework/582-app-order-pizza/img/pizza-icon.png"
-            alt="Icon pizza"
-          />
+          <img src="/img/pizza-icon.png" alt="Icon pizza" />
           <p>Medium</p>
         </div>
         <div class="size" @click="sizeSelected('large', pizza.size.large)">
-          <img
-            src="/web-framework/582-app-order-pizza/img/pizza-icon.png"
-            alt="Icon pizza"
-          />
+          <img src="/img/pizza-icon.png" alt="Icon pizza" />
           <p>Large</p>
         </div>
         <div class="size" @click="sizeSelected('xlarge', pizza.size.xlarge)">
-          <img
-            src="/web-framework/582-app-order-pizza/img/pizza-icon.png"
-            alt="Icon pizza"
-          />
+          <img src="/img/pizza-icon.png" alt="Icon pizza" />
           <p>X-Large</p>
         </div>
       </div>
@@ -172,6 +184,8 @@ export default {
       selectedSize: null,
       totalPrice: 0.0,
       totalPriceCustom: 0.0,
+      showNotification: false,
+      notificationMessage: "",
     };
   },
   setup() {
@@ -182,7 +196,11 @@ export default {
   methods: {
     selectSizeRun() {
       this.selectSize = !this.selectSize;
-      this.selectedSizePrice = null;
+      // Set default to medium when opening size selector
+      if (this.selectSize && this.pizza.size && this.pizza.size.medium) {
+        this.selectedSizePrice = this.pizza.size.medium;
+        this.selectedSize = "medium";
+      }
     },
     sizeSelected(size, price) {
       // console.log("size", size);
@@ -202,8 +220,14 @@ export default {
       if (pizza.custom === true) {
         this.$router.push("/customize/" + idPizza);
       } else {
-        this.$router.push("/cart/" + pizza._id);
+        // Show notification for regular pizzas
+        this.notificationMessage = `${pizza.title} (${this.selectedSize}) added to cart!`;
+        this.showNotification = true;
+        setTimeout(() => {
+          this.showNotification = false;
+        }, 3000);
       }
+      // Removed automatic navigation to cart for regular pizzas
     },
 
     removePizzaFromCart(pizza) {
@@ -250,11 +274,12 @@ export default {
     },
     //https://stackoverflow.com/questions/56303878/vue-js-cant-access-to-router-parameters-from-computed-property
     displayIngredientInPizza: function (ingredientId) {
-      // console.log("ID INNGREDIENT", ingredientId);
-      // console.log("PIZZAAAAA", this.pizza.ingredient);
+      // Safety check: ensure ingredient array exists
+      if (!this.pizza.ingredient || !Array.isArray(this.pizza.ingredient)) {
+        return false;
+      }
+
       for (let i = 0; i < this.pizza.ingredient.length; i++) {
-        // console.log("TEST 1 ", typeof this.pizzaToCustomize[i].id);
-        // console.log("TEST 2 ", typeof this.$route.params.id);
         if (this.pizza.ingredient[i]._id == ingredientId) {
           return true;
         }
@@ -280,5 +305,80 @@ export default {
 }
 .appears {
   display: block;
+}
+
+/* Custom pizza ingredients display in cart */
+.custom-pizza-ingredients {
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: #f8f8f8;
+  border-radius: 6px;
+  border-left: 3px solid #ff4444;
+}
+
+.ingredients-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.ingredients-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ingredient-tag {
+  font-size: 13px;
+  color: #555;
+}
+
+/* Notification Toast */
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #4caf50;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  max-width: 400px;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+}
+
+.notification-content p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }
 </style>

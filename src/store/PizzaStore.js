@@ -1,13 +1,49 @@
 import { defineStore } from "pinia";
 
+// Load cart from localStorage
+const loadCartFromStorage = () => {
+  try {
+    const savedCart = localStorage.getItem("pizzaCart");
+    const savedCount = localStorage.getItem("pizzaCartCount");
+    const savedCustomized = localStorage.getItem("pizzaCustomized");
+
+    return {
+      pizzasInCart: savedCart ? JSON.parse(savedCart) : [],
+      count: savedCount ? parseInt(savedCount) : 0,
+      pizzaCustomized: savedCustomized ? JSON.parse(savedCustomized) : [],
+    };
+  } catch (error) {
+    console.error("Error loading cart from localStorage:", error);
+    return {
+      pizzasInCart: [],
+      count: 0,
+      pizzaCustomized: [],
+    };
+  }
+};
+
+// Save cart to localStorage
+const saveCartToStorage = (pizzasInCart, count, pizzaCustomized) => {
+  try {
+    localStorage.setItem("pizzaCart", JSON.stringify(pizzasInCart));
+    localStorage.setItem("pizzaCartCount", count.toString());
+    localStorage.setItem("pizzaCustomized", JSON.stringify(pizzaCustomized));
+  } catch (error) {
+    console.error("Error saving cart to localStorage:", error);
+  }
+};
+
 export const usePizzaStore = defineStore("pizzaStore", {
   // state = data
-  state: () => ({
-    pizzas: [],
-    pizzasInCart: [],
-    pizzaCustomized: [],
-    count: 0,
-  }),
+  state: () => {
+    const savedData = loadCartFromStorage();
+    return {
+      pizzas: [],
+      pizzasInCart: savedData.pizzasInCart,
+      pizzaCustomized: savedData.pizzaCustomized,
+      count: savedData.count,
+    };
+  },
   getters: {
     getPizzas: (state) => state.pizzas,
     getPizzasInCart: (state) => state.pizzasInCart,
@@ -45,6 +81,7 @@ export const usePizzaStore = defineStore("pizzaStore", {
         };
 
         this.pizzaCustomized.push(pizzaToCustomize);
+        saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
 
         // returning the id of the pizza to customize to function sendingToCart in PizzaItem
         return pizzaToCustomize.id;
@@ -60,6 +97,11 @@ export const usePizzaStore = defineStore("pizzaStore", {
           size === this.pizzasInCart[i].sizeSelected
         ) {
           this.pizzasInCart[i].quantity++;
+          saveCartToStorage(
+            this.pizzasInCart,
+            this.count,
+            this.pizzaCustomized
+          );
           return;
         }
       }
@@ -79,17 +121,20 @@ export const usePizzaStore = defineStore("pizzaStore", {
       };
       this.pizzasInCart.push(pizzaToCart);
       this.count++;
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
     // -- --------------------------------------------------------------------------- --
 
     addCustomToCart(pizza) {
       this.pizzasInCart.push(pizza);
       this.count++;
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
 
     removePizzaFromCart(pizza) {
       this.pizzasInCart.splice(pizza, 1);
       this.count--;
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
 
     pizzaAddQuantityInStore(pizza) {
@@ -100,6 +145,7 @@ export const usePizzaStore = defineStore("pizzaStore", {
           this.calcTotalPricePizzaCustom(pizza);
         }
       }
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
     pizzaCustomAddQuantityInStore(pizza) {
       for (let i = 0; i < this.pizzaCustomized.length; i++) {
@@ -108,6 +154,7 @@ export const usePizzaStore = defineStore("pizzaStore", {
           this.count++;
         }
       }
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
     // calculate the total price of the pizza in the cart
     calcTotalPricePizzaInCart(id) {
@@ -148,6 +195,7 @@ export const usePizzaStore = defineStore("pizzaStore", {
           }
         }
       }
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
     getTotalPriceCart() {
       var totalPrice = 0.0;
@@ -188,6 +236,7 @@ export const usePizzaStore = defineStore("pizzaStore", {
     clearCart() {
       this.pizzasInCart = [];
       this.count = 0;
+      saveCartToStorage(this.pizzasInCart, this.count, this.pizzaCustomized);
     },
   },
 });

@@ -25,14 +25,20 @@ export default {
   },
   created() {
     this.ingredientStore.ingredients = [];
-    fetch(
-      "https://bookish-rotary-phone-j6j6g76r445255vv-3000.app.github.dev/customizepizza"
-    )
-      .then((response) => response.json())
+    fetch(`${process.env.VUE_APP_API_URL}/customizepizza`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((json) => {
         for (let ingredient of json) {
           this.ingredientStore.addIngredient(ingredient);
         }
+      })
+      .catch((error) => {
+        console.error("Error fetching ingredients:", error);
       });
   },
 };

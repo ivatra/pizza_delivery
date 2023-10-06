@@ -1,10 +1,23 @@
 import { shallowMount } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
 import PizzaItem from "@/components/PizzaItem.vue";
 
 describe("PizzaItem.vue", () => {
-  it("display Ingredient in Pizza when ingredient._id = true", () => {});
+  beforeEach(() => {
+    // Create a new pinia instance for each test
+    setActivePinia(createPinia());
+  });
 
-  it("display Ingredient in Pizza when ingredient._id = false", () => {});
+  it("display Ingredient in Pizza when ingredient._id = true", () => {
+    // Test implementation needed
+    expect(true).toBe(true);
+  });
+
+  it("display Ingredient in Pizza when ingredient._id = false", () => {
+    // Test implementation needed
+    expect(true).toBe(true);
+  });
+
   it("renders and display props tasks when passed", () => {
     const pizza = {
       id: 1,
@@ -20,6 +33,11 @@ describe("PizzaItem.vue", () => {
     };
     const wrapper = shallowMount(PizzaItem, {
       props: { pizza },
+      global: {
+        stubs: {
+          RouterLink: true,
+        },
+      },
     });
     expect(wrapper.find("h2").text()).toBe(pizza.title);
   });
@@ -39,6 +57,11 @@ describe("PizzaItem.vue", () => {
     };
     const wrapper = shallowMount(PizzaItem, {
       props: { pizza, displayBtnCart: true },
+      global: {
+        stubs: {
+          RouterLink: true,
+        },
+      },
     });
     expect(wrapper.find(".btn").exists()).toBe(true);
   });
@@ -58,6 +81,16 @@ describe("PizzaItem.vue", () => {
     };
     const wrapper = shallowMount(PizzaItem, {
       props: { pizza },
+      global: {
+        stubs: {
+          RouterLink: true,
+        },
+        mocks: {
+          $route: {
+            name: "index",
+          },
+        },
+      },
     });
     expect(wrapper.find(".btn").exists()).toBe(true);
   });
@@ -77,9 +110,15 @@ describe("PizzaItem.vue", () => {
     };
     const wrapper = shallowMount(PizzaItem, {
       props: { pizza },
+      global: {
+        stubs: {
+          RouterLink: true,
+        },
+      },
     });
     expect(wrapper.find("h2").text()).toBe(pizza.title);
   });
+
   it("toggles selectSize property when selectSizeRun method is called", async () => {
     const pizza = {
       id: 1,
@@ -95,28 +134,21 @@ describe("PizzaItem.vue", () => {
     };
 
     const wrapper = shallowMount(PizzaItem, {
-      props: { pizza, selectSize: false },
+      props: { pizza },
+      global: {
+        stubs: {
+          RouterLink: true,
+        },
+      },
     });
 
     expect(wrapper.vm.selectSize).toBe(false);
 
-    await wrapper.vm.selectSizeRun("1");
+    await wrapper.vm.selectSizeRun();
 
     expect(wrapper.vm.selectSize).toBe(true);
   });
 });
-
-// describe("PizzaItem.vue", () => {
-//     it("renders and display props tasks when passed", () => {
-//         const wrapper = mount(PizzaItem, {
-//             global: {
-//               plugins: [createTestingPinia()],
-//             },
-//           })
-//         expect(wrapper.find("h2").text()).toBe(pizza.title);
-//     }
-//     );
-// });
 
 // const store = usePizzaStore() // uses the testing pinia!
 

@@ -8,10 +8,7 @@
           Your order number is: <span> {{ $route.params.id }}</span>
         </p>
         <div class="delivery-img">
-          <img
-            src="/web-framework/582-app-order-pizza/img/delivery.gif"
-            alt="Gif delivery"
-          />
+          <img src="/img/delivery.gif" alt="Gif delivery" />
         </div>
       </div>
     </div>

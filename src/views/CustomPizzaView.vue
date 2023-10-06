@@ -5,10 +5,7 @@
     <div class="top-customize-view">
       <div class="back-btn">
         <router-link to="/">
-          <img
-            src="/web-framework/582-app-order-pizza/img/back-icon.png"
-            alt="Back icon"
-          />
+          <img src="/img/back-icon.png" alt="Back icon" />
         </router-link>
       </div>
       <div class="box-title-custom">

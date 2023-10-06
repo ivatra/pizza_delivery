@@ -50,8 +50,7 @@ export default {
     return { pizzaStore, pizzaInCart };
   },
   methods: {
-    placeOrder(pizzaInCart) {
-
+    placeOrder() {
       var orderToDb = {
         _id: null,
         //https://singhak.in/create-n-length-random-number-in-javascript/
@@ -64,21 +63,17 @@ export default {
         totalprice: this.pizzaStore.getTotalPriceCart(),
       };
 
-
-      fetch(
-        "https://bookish-rotary-phone-j6j6g76r445255vv-3000.app.github.dev/placeorder",
-        {
-          method: "POST",
-          body: JSON.stringify(orderToDb),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
+      fetch(`${process.env.VUE_APP_API_URL}/placeorder`, {
+        method: "POST",
+        body: JSON.stringify(orderToDb),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
         .then((response) => {
           return response.text();
         })
-        .then((data) => {
+        .then(() => {
           this.pizzaStore.clearCart();
           this.$router.push("/orderplaced/" + orderToDb.orderNumber);
         });

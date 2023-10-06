@@ -4,10 +4,7 @@
       <div class="cart-btn">
         <router-link to="/cart/1">
           <div class="cart">
-            <img
-              src="/web-framework/582-app-order-pizza/img/cart-icon.png"
-              alt="Cart icon"
-            />
+            <img src="/img/cart-icon.png" alt="Cart icon" />
             <div class="qt-cart">{{ pizzaStore.count }}</div>
           </div>
         </router-link>
@@ -48,14 +45,20 @@ export default {
     this.pizzaStore.pizzas = [];
     this.ingredientStore.ingredientsAdded = [];
 
-    fetch(
-      "https://bookish-rotary-phone-j6j6g76r445255vv-3000.app.github.dev +/pizza"
-    )
-      .then((response) => response.json())
+    fetch(`${process.env.VUE_APP_API_URL}/pizza`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
       .then((json) => {
         for (let pizza of json) {
           this.pizzaStore.addPizza(pizza);
         }
+      })
+      .catch((error) => {
+        console.error("Error fetching pizzas:", error);
       });
   },
 };
